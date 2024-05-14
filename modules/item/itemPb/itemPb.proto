@@ -1,0 +1,27 @@
+// Version
+syntax = "proto3";
+
+// Package
+option go_package = "github.com/neabparinya11/Golang-Project";
+
+// Structure
+message FindItemInIdsRequest{
+    repeated int32 ids = 1;
+}
+
+message FindItemInIdsResponse{
+    repeated int32 items = 1;
+}
+
+message Item{
+    string id = 1;
+    string title = 2;
+    double price = 3;
+    string imageUrl = 4;
+    int32 damage = 5;
+}
+
+//Service
+service ItemGrpcService{
+    rpc FindItemInIds(FindItemInIdsRequest) returns (FindItemInIdsResponse);
+}

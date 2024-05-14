@@ -1,0 +1,20 @@
+// Version
+syntax = "proto3";
+
+// Package
+option go_package = "github.com/neabparinya11/Golang-Project";
+
+// Structure
+message IsAvailableToSellRequest{
+    string playerId = 1;
+    string itemId = 2;
+}
+
+message IsAvailableToSellResponse{
+    bool isAvailable = 1;
+}
+
+//Service
+service InventoryGrpcService{
+    rpc IsAvailableToSell(IsAvailableToSellRequest) returns (IsAvailableToSellResponse);
+}

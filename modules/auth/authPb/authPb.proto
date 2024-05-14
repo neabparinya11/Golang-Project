@@ -1,0 +1,28 @@
+// Version
+syntax = "proto3";
+
+// Package
+option go_package = "github.com/neabparinya11/Golang-Project";
+
+// Structure
+message Empty {}
+
+message AccessTokenSearchRequest {
+    string accessToken = 1;
+}
+
+message AccessTokenSearchResponse {
+    bool isValid = 1;
+}
+
+message RolesCountRequest {}
+
+message RolesCountResponse {
+    int64 count = 1;
+}
+
+//Service
+service AuthGrpcService{
+    rpc AccessTokenSearch(AccessTokenSearchRequest) returns (AccessTokenSearchResponse);
+    rpc RolesCount(RolesCountRequest) returns (RolesCountResponse);
+}

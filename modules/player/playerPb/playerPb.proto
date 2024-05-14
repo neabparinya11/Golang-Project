@@ -1,0 +1,40 @@
+// Version
+syntax = "proto3";
+
+// Package
+option go_package = "github.com/neabparinya11/Golang-Project";
+
+// Structure
+message PlayerProfile{
+    string id = 1;
+    string email = 2;
+    string username = 3;
+    int32 roleCode = 4;
+    string create_at = 5;
+    string update_at = 6;
+}
+
+message CreadentialSearchRequest{
+    string email = 1;
+    string password = 2;
+}
+
+message FindOnePlayerProfileToRefreshRequest{
+    string playerId = 1;
+}
+
+message GetPlayerSavingAccoutRequest{
+    string playerId = 1;
+}
+
+message GetPlayerSavingAccoutResponse{
+    string playerId = 1;
+    double balance = 2;
+}
+
+//Service
+service PlayerGrpcService{
+    rpc CreadentialSearch(CreadentialSearchRequest) returns (PlayerProfile);
+    rpc FindOnePlayerProfileToRefresh(FindOnePlayerProfileToRefreshRequest) returns (PlayerProfile);
+    rpc GetPlayerSavingAccout(GetPlayerSavingAccoutRequest) returns (GetPlayerSavingAccoutResponse);
+}
