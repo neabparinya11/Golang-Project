@@ -68,6 +68,7 @@ func (h *PlayerHttpHandler) AddPlayerMoney(c echo.Context) error {
 	wrapper := request.NewContextWrapper(c)
 
 	req := new(player.CreatePlayerTransactionRequest)
+	req.PlayerId = c.Get("player_id").(string)
 
 	if err := wrapper.Bind(req); err != nil {
 		return response.ErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -84,7 +85,7 @@ func (h *PlayerHttpHandler) AddPlayerMoney(c echo.Context) error {
 func (h *PlayerHttpHandler) GetPlayerSavingAccout(c echo.Context) error {
 	ctx := context.Background()
 
-	playerId := c.Param("player_id")
+	playerId := c.Get("player_id").(string)
 
 	res, err := h.playerUsecase.GetPlayerSavingAccout(ctx, playerId)
 	if err != nil {

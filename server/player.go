@@ -25,7 +25,6 @@ func (s *Server) PlayerService() {
 		grpcServer.Serve(lis)
 	}()
 
-	_ = grpcHandler
 	_ = queueHandler
 
 	//Route path
@@ -35,7 +34,7 @@ func (s *Server) PlayerService() {
 	player.GET("/health", s.HealthCheckService)
 
 	player.POST("/player/register", httpHandler.CreatePlayer)
-	player.POST("/player/add-money", httpHandler.AddPlayerMoney)
+	player.POST("/player/add-money", httpHandler.AddPlayerMoney, s.middleware.JwtAuthorization)
 	player.GET("/player/:player_id", httpHandler.FindOnePlayerProfile)
-	player.GET("/player/account/:player_id", httpHandler.GetPlayerSavingAccout)
+	player.GET("/playe/saving-account/my-account", httpHandler.GetPlayerSavingAccout, s.middleware.JwtAuthorization)
 }

@@ -11,6 +11,7 @@ import (
 	authrepository "github.com/neabparinya11/Golang-Project/modules/auth/authRepository"
 	"github.com/neabparinya11/Golang-Project/modules/player"
 	playerPb "github.com/neabparinya11/Golang-Project/modules/player/playerPb"
+	authPb "github.com/neabparinya11/Golang-Project/modules/auth/authPb"
 	"github.com/neabparinya11/Golang-Project/pkg/jwtauth"
 	"github.com/neabparinya11/Golang-Project/pkg/utils"
 )
@@ -20,6 +21,8 @@ type (
 		Login(pctx context.Context, cfg *config.Config, req *auth.PlayerLoginRequest) (*auth.ProfileIntercepter, error)
 		RefreshToken(pctx context.Context, cfg *config.Config, req *auth.PlayerRefreshToken) (*auth.ProfileIntercepter, error)
 		Logout(pctx context.Context, credentialId string) (int64, error)
+		AccessTokenSearch(pctx context.Context, accessToken string) (*authPb.AccessTokenSearchResponse, error)
+		RoleCount(pctx context.Context) (*authPb.RolesCountResponse, error)
 	}
 
 	AuthUsecase struct {
@@ -152,4 +155,33 @@ func (u *AuthUsecase) RefreshToken(pctx context.Context, cfg *config.Config, req
 
 func (u *AuthUsecase) Logout(pctx context.Context, credentialId string) (int64, error) {
 	return u.authRepository.DeleteOnePlayerCredential(pctx, credentialId)
+}
+
+func (u *AuthUsecase) AccessTokenSearch(pctx context.Context, accessToken string) (*authPb.AccessTokenSearchResponse, error) {
+	credential, err := u.authRepository.FindOneAccessToken(pctx, accessToken)
+	if err != nil {
+		return &authPb.AccessTokenSearchResponse{
+			IsValid: false,
+		},err
+	}
+
+	if credential == nil {
+		return &authPb.AccessTokenSearchResponse{
+			IsValid: false,
+		}, errors.New("error: access token is invalid")
+	}
+	return &authPb.AccessTokenSearchResponse{
+		IsValid: true,
+	},nil
+}
+
+func (u *AuthUsecase) RoleCount(pctx context.Context) (*authPb.RolesCountResponse, error) {
+	result, err := u.authRepository.RoleCount(pctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &authPb.RolesCountResponse{
+		Count: result,
+	},nil
 }
