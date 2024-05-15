@@ -7,7 +7,7 @@ type (
 	}
 
 	PaginateResponse struct {
-		Data  string        `json:"data"`
+		Data  any        `json:"data"`
 		Limit int           `json:"limit"`
 		Total int64         `json:"total"`
 		First FirstPaginate `json:"first"`
@@ -16,10 +16,10 @@ type (
 
 	FirstPaginate struct {
 		Href  string `json:"href"`
-		Start string `json:"start"`
 	}
 
 	NextPaginate struct {
+		Start string `json:"start"`
 		Href string `json:"href"`
 	}
 

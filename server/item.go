@@ -30,4 +30,7 @@ func (s *Server) ItemService() {
 
 	//Health check
 	item.GET("/health", s.HealthCheckService)
+	item.GET("/item/:item_id", httpHandler.FindOneItem)
+	item.GET("/item", httpHandler.FindManyItems)
+	item.POST("/item", s.middleware.JwtAuthorization(s.middleware.RbacAuthorization(httpHandler.CreateItem, []int{1, 0})))
 }
