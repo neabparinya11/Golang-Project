@@ -21,6 +21,8 @@ type (
 		FindOneItem(pctx context.Context, itemId string) (*item.Item, error)
 		FindManyItems(pctx context.Context, filter primitive.D, option []*options.FindOptions) ([]*item.ItemShowCase, error)
 		CountItems(pctx context.Context, filter primitive.D) (int64, error)
+		UpdateOneItems(pctx context.Context, itemId string, req primitive.M) error
+		EnableOrDisableItem(pctx context.Context, itemId string, isActivate bool) error
 	}
 
 	ItemRepository struct {
@@ -126,4 +128,37 @@ func (r *ItemRepository) CountItems(pctx context.Context, filter primitive.D) (i
 	}
 
 	return counts, nil
+}
+
+func (r *ItemRepository) UpdateOneItems(pctx context.Context, itemId string, req primitive.M) error {
+	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
+	defer cancel()
+
+	db := r.itemDbConn(ctx)
+	col := db.Collection("items")
+
+	result, err := col.UpdateOne(ctx, bson.M{"_id": utils.ConvertToObjectId(itemId)}, bson.M{"$set": req})
+	if err != nil {
+		return errors.New("error: Update one item failed")
+	}
+	log.Printf("UpdateOneItem: %v", result.ModifiedCount)
+	
+	return nil
+}
+
+func (r *ItemRepository) EnableOrDisableItem(pctx context.Context, itemId string, isActivate bool) error {
+	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
+	defer cancel()
+
+	db := r.itemDbConn(ctx)
+	col := db.Collection("items")
+
+	result, err := col.UpdateOne(ctx, bson.M{"_id": utils.ConvertToObjectId(itemId)}, bson.M{"$set": bson.M{"usage_status": isActivate}})
+	if err != nil {
+		return errors.New("error: enable or diable failed")
+	}
+
+	log.Printf("EnableOrDisableItem: %v", result.ModifiedCount)
+
+	return nil
 }

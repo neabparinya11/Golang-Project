@@ -33,4 +33,5 @@ func (s *Server) InventoryService() {
 
 	//Health check
 	inventory.GET("/health", s.HealthCheckService)
+	inventory.GET("/inventory/:player_id", httpHandler.FindPlayerItems, s.middleware.JwtAuthorization, s.middleware.PlayerIdParamValidation)
 }

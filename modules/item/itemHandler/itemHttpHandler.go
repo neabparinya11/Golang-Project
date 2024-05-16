@@ -2,6 +2,7 @@ package itemhandler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -18,6 +19,8 @@ type (
 		CreateItem(c echo.Context) error
 		FindOneItem(c echo.Context) error
 		FindManyItems(c echo.Context) error
+		EditItem(c echo.Context) error
+		EnableOrDisableItem(c echo.Context) error
 	}
 
 	ItemHttpHandler struct {
@@ -77,4 +80,39 @@ func (h *ItemHttpHandler) FindManyItems(c echo.Context) error {
 	}
 
 	return response.SuccessResponse(c, http.StatusOK, res)
+}
+
+func (h *ItemHttpHandler) EditItem(c echo.Context) error {
+	ctx := context.Background()
+
+	itemId := strings.TrimPrefix(c.Param("item_id"), "item:")
+
+	wrapper := request.NewContextWrapper(c)
+
+	req := new(item.ItemUpdateRequest)
+	if err := wrapper.Bind(req); err != nil {
+		return response.ErrorResponse(c, http.StatusBadRequest, err.Error())
+	}
+
+	res, err := h.itemUsecase.EditItem(ctx, itemId, req)
+	if err != nil {
+		return response.ErrorResponse(c, http.StatusBadRequest, err.Error())
+	}
+
+	return response.SuccessResponse(c, http.StatusOK, res)
+}
+
+func (h *ItemHttpHandler) EnableOrDisableItem(c echo.Context) error {
+	ctx := context.Background()
+
+	itemId := strings.TrimPrefix(c.Param("item_id"), "item:")
+	
+	res, err := h.itemUsecase.EnableOrDisableItem(ctx, itemId)
+	if err != nil {
+		return response.ErrorResponse(c, http.StatusBadRequest, err.Error())
+	}
+
+	return response.SuccessResponse(c, http.StatusOK, &response.MessageResponse{
+		Message: fmt.Sprintf("item_id: %s is successful is activate to %v", itemId, res),
+	})
 }

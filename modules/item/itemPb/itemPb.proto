@@ -6,11 +6,11 @@ option go_package = "github.com/neabparinya11/Golang-Project";
 
 // Structure
 message FindItemInIdsRequest{
-    repeated int32 ids = 1;
+    repeated string ids = 1;
 }
 
 message FindItemInIdsResponse{
-    repeated int32 items = 1;
+    repeated Item items = 1;
 }
 
 message Item{

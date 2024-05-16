@@ -18,6 +18,6 @@ func NewItemGrpcHandler(itemUsecase itemusecase.ItemUsecaseService) *ItemGrpcHan
 	return &ItemGrpcHandler{itemUsecase: itemUsecase}
 }
 
-func (i *ItemGrpcHandler) FindItemInIds(ct context.Context, req *itemPb.FindItemInIdsRequest) (*itemPb.FindItemInIdsResponse, error){
-	return nil, nil
+func (g *ItemGrpcHandler) FindItemInIds(ctx context.Context, req *itemPb.FindItemInIdsRequest) (*itemPb.FindItemInIdsResponse, error){
+	return g.itemUsecase.FindItemInIds(ctx, req)
 }
