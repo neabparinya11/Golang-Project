@@ -10,6 +10,7 @@ import (
 	"github.com/neabparinya11/Golang-Project/pkg/grpccon"
 	"github.com/neabparinya11/Golang-Project/pkg/jwtauth"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -17,7 +18,7 @@ import (
 type (
 	InventoryRepositoryService interface{
 		FindItemInIds(pctx context.Context, grpcUrl string, req *itemPb.FindItemInIdsRequest) (*itemPb.FindItemInIdsResponse , error)
-		FindPlayerItems(pctx context.Context, playerId string, option []*options.FindOptions) ([]*inventory.Inventory, error)
+		FindPlayerItems(pctx context.Context, filter primitive.D, option []*options.FindOptions) ([]*inventory.Inventory, error)
 		CountPlayerItems(pctx context.Context, playerId string) (int64, error)
 	}
 
@@ -61,14 +62,14 @@ func (r *InventoryRepository) FindItemInIds(pctx context.Context, grpcUrl string
 	return result, nil
 }
 
-func (r *InventoryRepository) FindPlayerItems(pctx context.Context, playerId string, option []*options.FindOptions) ([]*inventory.Inventory, error) {
+func (r *InventoryRepository) FindPlayerItems(pctx context.Context, filter primitive.D, option []*options.FindOptions) ([]*inventory.Inventory, error) {
 	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
 	defer cancel()
 
 	db := r.inventoryDbConn(ctx)
 	col := db.Collection("players_inventory")
 
-	cursors, err := col.Find(ctx, bson.M{"player_id": playerId}, option...)
+	cursors, err := col.Find(ctx, filter, option...)
 	if err != nil {
 		return nil, errors.New("error: Player item not found")
 	}
