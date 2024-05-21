@@ -20,6 +20,8 @@ type (
 		GetPlayerSavingAccout(pctx context.Context, playerId string) (*player.PlayerSavingAccout, error)
 		FindOnePlayerCredential(pctx context.Context, password, email string) (*playerPb.PlayerProfile, error)
 		FindOnePlayerProfileToRefresh(pctx context.Context, playerId string) (*playerPb.PlayerProfile, error)
+		GetOffset(pctx context.Context) (int64, error)
+		UserOffset(pctx context.Context, kafkaOffset int64) error
 	}
 
 	PlayerUsecase struct {
@@ -152,4 +154,12 @@ func (u *PlayerUsecase) FindOnePlayerProfileToRefresh(pctx context.Context, play
 		CreateAt: result.CreateAt.In(loc).String(),
 		UpdateAt: result.UpdateAt.In(loc).String(),
 	}, nil
+}
+
+func (u *PlayerUsecase) GetOffset(pctx context.Context) (int64, error) {
+	return u.playerRepository.GetOffset(pctx)
+}
+
+func (u *PlayerUsecase) UserOffset(pctx context.Context, kafkaOffset int64) error {
+	return u.playerRepository.UpserOffset(pctx, kafkaOffset)
 }

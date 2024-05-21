@@ -18,6 +18,8 @@ import (
 type (
 	InventoryUsecaseService interface{
 		FindPlayerItems(pctx context.Context, cfg *config.Config, playerId string, req *inventory.InventorySearchRequest) (*models.PaginateResponse, error)
+		GetOffset(pctx context.Context) (int64, error)
+		UserOffset(pctx context.Context, kafkaOffset int64) error
 	}
 
 	InventoryUsecase struct {
@@ -115,4 +117,12 @@ func (u *InventoryUsecase) FindPlayerItems(pctx context.Context, cfg *config.Con
 			Href: fmt.Sprintf("%s/%s?limit=%d&start=%s", cfg.Paginate.InventoryNextBaseUrl, playerId, req.Limit, results[len(resultFindPlayerItem) -1].InventoryId),
 		},
 	}, nil
+}
+
+func (u *InventoryUsecase) GetOffset(pctx context.Context) (int64, error) {
+	return u.inventoryRepository.GetOffset(pctx)
+}
+
+func (u *InventoryUsecase) UserOffset(pctx context.Context, kafkaOffset int64) error {
+	return u.inventoryRepository.UpserOffset(pctx, kafkaOffset)
 }

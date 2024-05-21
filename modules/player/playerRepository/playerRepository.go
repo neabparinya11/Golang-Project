@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/neabparinya11/Golang-Project/modules/models"
 	"github.com/neabparinya11/Golang-Project/modules/player"
 	"github.com/neabparinya11/Golang-Project/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,6 +24,8 @@ type (
 		GetPlayerSavingAccout(pctx context.Context, playerId string) (*player.PlayerSavingAccout, error)
 		FindOnePlayerCredential(pctx context.Context, email string) (*player.Player, error)
 		FindOnePlayerProfileToRefresh(pctx context.Context, playerId string) (*player.Player, error)
+		GetOffset(pctx context.Context) (int64, error)
+		UpserOffset(pctx context.Context, kafkaOffset int64) error
 	}
 
 	PlayerRepository struct {
@@ -175,4 +178,36 @@ func (r *PlayerRepository) FindOnePlayerProfileToRefresh(pctx context.Context, p
 	}
 
 	return result, nil
+}
+
+func (r *PlayerRepository) GetOffset(pctx context.Context) (int64, error) {
+	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
+	defer cancel()
+
+	db := r.playerDbConn(ctx)
+	col := db.Collection("player_transactions_queue")
+
+	result := new(models.KafkaOffset)
+	if err := col.FindOne(ctx, bson.M{}).Decode(result); err != nil {
+		return -1, errors.New("error")
+	}
+
+	return result.Offset, nil
+}
+
+func (r *PlayerRepository) UpserOffset(pctx context.Context, kafkaOffset int64) error {
+	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
+	defer cancel()
+
+	db := r.playerDbConn(ctx)
+	col := db.Collection("player_transactions_queue")
+
+	result, err := col.UpdateOne(ctx, bson.M{}, bson.M{"$set": bson.M{"offset": kafkaOffset}})
+	if err != nil {
+		return errors.New("error: Upseroffset failed")
+	}
+
+	log.Printf("Info: Upseroffset result: %v", result)
+
+	return nil
 }

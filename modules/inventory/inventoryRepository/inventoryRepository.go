@@ -3,10 +3,12 @@ package inventoryrepository
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/neabparinya11/Golang-Project/modules/inventory"
 	itemPb "github.com/neabparinya11/Golang-Project/modules/item/itemPb"
+	"github.com/neabparinya11/Golang-Project/modules/models"
 	"github.com/neabparinya11/Golang-Project/pkg/grpccon"
 	"github.com/neabparinya11/Golang-Project/pkg/jwtauth"
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,6 +22,8 @@ type (
 		FindItemInIds(pctx context.Context, grpcUrl string, req *itemPb.FindItemInIdsRequest) (*itemPb.FindItemInIdsResponse , error)
 		FindPlayerItems(pctx context.Context, filter primitive.D, option []*options.FindOptions) ([]*inventory.Inventory, error)
 		CountPlayerItems(pctx context.Context, playerId string) (int64, error)
+		GetOffset(pctx context.Context) (int64, error)
+		UpserOffset(pctx context.Context, kafkaOffset int64) error
 	}
 
 	InventoryRepository struct {
@@ -99,4 +103,36 @@ func (r *InventoryRepository) CountPlayerItems(pctx context.Context, playerId st
 	}
 
 	return counts, nil
+}
+
+func (r *InventoryRepository) GetOffset(pctx context.Context) (int64, error) {
+	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
+	defer cancel()
+
+	db := r.inventoryDbConn(ctx)
+	col := db.Collection("players_inventory_queue")
+
+	result := new(models.KafkaOffset)
+	if err := col.FindOne(ctx, bson.M{}).Decode(result); err != nil {
+		return -1, errors.New("error")
+	}
+
+	return result.Offset, nil
+}
+
+func (r *InventoryRepository) UpserOffset(pctx context.Context, kafkaOffset int64) error {
+	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
+	defer cancel()
+
+	db := r.inventoryDbConn(ctx)
+	col := db.Collection("players_inventory_queue")
+
+	result, err := col.UpdateOne(ctx, bson.M{}, bson.M{"$set": bson.M{"offset": kafkaOffset}})
+	if err != nil {
+		return errors.New("error: Upseroffset failed")
+	}
+
+	log.Printf("Info: Upseroffset result: %v", result)
+
+	return nil
 }
